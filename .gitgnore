@@ -1,10 +1,10 @@
 # Ignore credentials
-*.0_credentials.json
+0_credentials.json
 
 # Ignore invoices
-*.facture*
+*facture*
 
 # Ignore production, consumption and installation data
-*.*LU*.xlsx
-*.*Installations.xlsx
+*LU*.xlsx
+*Installations.xlsx
 
