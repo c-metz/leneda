@@ -16,4 +16,4 @@
 !*/   # Do not ignore directories
 
 # Ignore Python cache files
-__pycache__/
+*__pycache__*
