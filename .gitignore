@@ -14,3 +14,6 @@
 
 # Track the directory by adding a rule to not ignore it
 !*/   # Do not ignore directories
+
+# Ignore Python cache files
+__pycache__/
