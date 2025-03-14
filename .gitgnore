@@ -13,4 +13,4 @@ facture*
 *.ini
 
 # Track the directory by adding a rule to not ignore it
-!*/   # Don't ignore directories
+!*/   # Do not ignore directories
