@@ -2,7 +2,7 @@
 0_credentials.json
 
 # Ignore invoices
-*facture*
+facture*
 
 # Ignore production, consumption and installation data
 *LU*.xlsx
