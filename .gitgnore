@@ -5,9 +5,12 @@
 facture*
 
 # Ignore production, consumption and installation data
-/*LU*.xlsx
+*LU*.xlsx
 *Installations.xlsx
 
 
 # Ignore unnecessary files
 *.ini
+
+# Track the directory by adding a rule to not ignore it
+!*/   # Don't ignore directories
