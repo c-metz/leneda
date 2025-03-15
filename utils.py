@@ -15,6 +15,8 @@ from string import ascii_uppercase
 import subprocess
 import openpyxl
 
+
+
 # =============================================================================
 # API DATA FETCHING AND PROCESSING
 # =============================================================================
@@ -34,9 +36,32 @@ def fetch_data(HEADERS, pod, obis_code, start_date, end_date):
         return None
 
 
+def process_api_data(HEADERS, site_name, site_info, start_date, end_date):
+    """
+    Process API data into a dictionary of DataFrames for each metering point.
+    """
+    OBIS_CODES = {
+                    "measured_active_production": "1-1:2.29.0",
+                    "remaining_production_after_sharing": "1-65:2.29.9"
+                 }
+    pod = site_info["POD"]
+    df_list = []
+    for obis_label, obis_code in OBIS_CODES.items():
+        data = fetch_data(HEADERS, pod, obis_code, start_date, end_date)
+        if data and 'items' in data:
+            df = pd.DataFrame(data['items'])
+            df["meteringPointCode"] = data["meteringPointCode"]
+            df["obisCode"] = data["obisCode"]
+            df["intervalLength"] = data["intervalLength"]
+            df["unit"] = data["unit"]
+            df_list.append(df.add_suffix(f"_{obis_label}"))
+    if df_list:
+        data_frame = pd.concat(df_list, axis=1)
+    return data_frame
 
 
-def calculate_monthly_summaries(df_site, autoconsumption_price):
+
+def calculate_monthly_summaries(df_site, autoconsumption, autoconsumption_price):
     """
     Calculate monthly summaries (aggregations) for production and consumption.
     """
@@ -44,19 +69,28 @@ def calculate_monthly_summaries(df_site, autoconsumption_price):
     # Use primary timestamp from production data
     df_site.index = pd.to_datetime(df_site["startedAt_measured_active_production"])
         
-    df_site["Self-Consumption"] = df_site["value_measured_active_production"] - df_site["value_remaining_production_after_sharing"]
-    monthly = df_site[["value_measured_active_production", "value_remaining_production_after_sharing", "Self-Consumption"]].resample("ME").sum() / 4
+    if autoconsumption=="Autoconsumption":
+        monthly.rename(columns={
+                                   "value_measured_active_production": "Production",
+                                   "value_remaining_production_after_sharing": "Grid Injection",
+                               }, inplace=True)
+        df_site["Self-Consumption"] = df_site["Production"] - df_site["Grid Injection"]
+        monthly = df_site[["Production", "Grid Injection", "Self-Consumption"]].resample("ME").sum() / 4
+        monthly["Self-Consumption Ratio"] = monthly["Self-Consumption"] / monthly["Production"]
+        
 
-    monthly["Self-Consumption Ratio"] = monthly["Self-Consumption"] / monthly["value_measured_active_production"]
+    elif autoconsumption=="Injection":
+        df_site["Self-Consumption"] = 0
+        df_site["Production"] = df_site["value_measured_active_production"]
+        df_site["Grid Injection"] = df_site["Production"]
+        monthly = df_site[["Production", "Grid Injection", "Self-Consumption"]].resample("ME").sum() / 4
+        monthly["Self-Consumption Ratio"] = 0
+
+
     monthly["Pre-VAT Bill"] = monthly["Self-Consumption"] * autoconsumption_price
     monthly["VAT Rate"] = df_site[["VAT Rate"]].resample("ME").mean()
     monthly["VAT Amount"] = monthly["Pre-VAT Bill"] * monthly["VAT Rate"]
     monthly["Total Bill"] = monthly["Pre-VAT Bill"] + monthly["VAT Amount"]
-
-    monthly.rename(columns={
-        "value_measured_active_production": "Production",
-        "value_remaining_production_after_sharing": "Grid Injection",
-    }, inplace=True)
 
     monthly["Price"] = autoconsumption_price
 
@@ -68,30 +102,6 @@ def calculate_monthly_summaries(df_site, autoconsumption_price):
 
 
 
-def process_api_data(HEADERS, dict_inst, start_date, end_date):
-    """
-    Process API data into a dictionary of DataFrames for each metering point.
-    """
-    OBIS_CODES = {
-                    "measured_active_production": "1-1:2.29.0",
-                    "remaining_production_after_sharing": "1-65:2.29.9"
-                 }
-    data_frames = {}
-    for site_name, site_info in dict_inst.items():
-        pod = site_info["POD"]
-        df_list = []
-        for obis_label, obis_code in OBIS_CODES.items():
-            data = fetch_data(HEADERS, pod, obis_code, start_date, end_date)
-            if data and 'items' in data:
-                df = pd.DataFrame(data['items'])
-                df["meteringPointCode"] = data["meteringPointCode"]
-                df["obisCode"] = data["obisCode"]
-                df["intervalLength"] = data["intervalLength"]
-                df["unit"] = data["unit"]
-                df_list.append(df.add_suffix(f"_{obis_label}"))
-        if df_list:
-            data_frames[site_name] = pd.concat(df_list, axis=1)
-    return data_frames
 
 
 
