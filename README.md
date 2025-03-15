@@ -1,4 +1,4 @@
-# **Leneda PV Data Processor**
+# **Leneda PV Data Handling**
 
 ## **Overview**
 This project processes and analyzes **photovoltaic (PV) production** and **power consumption data**. It fetches data from the [Leneda API](https://leneda.eu/en/), processes it, and generates **monthly summaries** and **invoices**.
