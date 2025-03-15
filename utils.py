@@ -36,7 +36,7 @@ def fetch_data(HEADERS, pod, obis_code, start_date, end_date):
         return None
 
 
-def process_api_data(HEADERS, site_name, site_info, start_date, end_date):
+def process_api_data(HEADERS, pod, start_date, end_date):
     """
     Process API data into a dictionary of DataFrames for each metering point.
     """
@@ -44,7 +44,6 @@ def process_api_data(HEADERS, site_name, site_info, start_date, end_date):
                     "measured_active_production": "1-1:2.29.0",
                     "remaining_production_after_sharing": "1-65:2.29.9"
                  }
-    pod = site_info["POD"]
     df_list = []
     for obis_label, obis_code in OBIS_CODES.items():
         data = fetch_data(HEADERS, pod, obis_code, start_date, end_date)
@@ -70,21 +69,21 @@ def calculate_monthly_summaries(df_site, autoconsumption, autoconsumption_price)
     df_site.index = pd.to_datetime(df_site["startedAt_measured_active_production"])
         
     if autoconsumption=="Autoconsumption":
-        monthly.rename(columns={
+        df_site.rename(columns={
                                    "value_measured_active_production": "Production",
                                    "value_remaining_production_after_sharing": "Grid Injection",
                                }, inplace=True)
         df_site["Self-Consumption"] = df_site["Production"] - df_site["Grid Injection"]
-        monthly = df_site[["Production", "Grid Injection", "Self-Consumption"]].resample("ME").sum() / 4
-        monthly["Self-Consumption Ratio"] = monthly["Self-Consumption"] / monthly["Production"]
         
 
     elif autoconsumption=="Injection":
         df_site["Self-Consumption"] = 0
         df_site["Production"] = df_site["value_measured_active_production"]
         df_site["Grid Injection"] = df_site["Production"]
-        monthly = df_site[["Production", "Grid Injection", "Self-Consumption"]].resample("ME").sum() / 4
-        monthly["Self-Consumption Ratio"] = 0
+        df_site["Self-Consumption Ratio"] = 0
+    
+    monthly = df_site[["Production", "Grid Injection", "Self-Consumption"]].resample("ME").sum() / 4
+    monthly["Self-Consumption Ratio"] = monthly["Self-Consumption"] / monthly["Production"]
 
 
     monthly["Pre-VAT Bill"] = monthly["Self-Consumption"] * autoconsumption_price
@@ -99,9 +98,6 @@ def calculate_monthly_summaries(df_site, autoconsumption, autoconsumption_price)
     monthly.index = monthly.index.tz_localize(None)
     
     return monthly
-
-
-
 
 
 
@@ -208,11 +204,10 @@ def aggregate_dataframe(df, agg_rules, group_period):
     return grouped
     
 
-def process_sheet(site_name, site_info, df_site_month, sheet_type="autoconsumption"):
+def process_sheet(site_name, site_info, pod, df_site_month, sheet_type="autoconsumption"):
     """
     Process a given sheet (autoconsumption or injection) from the Excel input.
     """
-    pod = site_info["POD"]
     capacity = site_info["Capacity [kWp]"]
     
     print(f"Processing sheet for {site_name} POD {pod} as {sheet_type}...")
@@ -331,7 +326,7 @@ def process_sheet(site_name, site_info, df_site_month, sheet_type="autoconsumpti
                            pod, 
                            capacity, 
                            is_injection=(sheet_type=="injection"))
-    print(f"Output saved to {output_file}")
+    print(f"... done.")
 
 
 def format_monthly_data(df):
