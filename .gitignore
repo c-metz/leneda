@@ -1,0 +1,19 @@
+# Ignore credentials
+*credentials.json
+
+# Ignore invoices
+*facture*
+
+# Ignore production, consumption and installation data
+*LU*.xlsx
+*Installations.xlsx
+
+
+# Ignore unnecessary files
+*.ini
+
+# Track the directory by adding a rule to not ignore it
+!*/   # Do not ignore directories
+
+# Ignore Python cache files
+*__pycache__*
