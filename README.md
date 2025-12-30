@@ -10,7 +10,7 @@ This project was developed in the context of **Energiekooperativ Uelzechtdall (E
 ---
 
 ## **⚠ Disclaimer**
-**Update:** This code formed the quick-and-dirty basis for the code developed by SeDietz in the repository [RESYlytics](https://github.com/c-metz/RESYlytics). Hence, this repository is not maintained any more and current contributions go towards the RESYlytics.
+**Update:** This code formed the quick-and-dirty proof of conecpt basis for the code developed by SeDietz in the repository [RESYlytics](https://github.com/c-metz/RESYlytics). Hence, this repository is not maintained any more and current contributions go towards the RESYlytics.
 
 This code is designed to be **easy to understand and adapt** for basic Python users. It does not reflect the **professional standards** I would apply in a corporate setting.
 
