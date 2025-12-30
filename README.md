@@ -1,5 +1,7 @@
 # **Leneda PV Data Handling**
 
+
+
 ## **Overview**
 This project processes and analyzes **photovoltaic (PV) production** and **power consumption data**. It fetches data from the [Leneda API](https://leneda.eu/en/), processes it, and generates **monthly summaries** and **invoices**.
 
@@ -8,6 +10,8 @@ This project was developed in the context of **Energiekooperativ Uelzechtdall (E
 ---
 
 ## **⚠ Disclaimer**
+**Update:** This code formed the quick-and-dirty basis for the code developed by SeDietz in the repository [RESYlytics](https://github.com/c-metz/RESYlytics). Hence, this repository is not maintained any more and current contributions go towards the RESYlytics.
+
 This code is designed to be **easy to understand and adapt** for basic Python users. It does not reflect the **professional standards** I would apply in a corporate setting.
 
 > **License:** This project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
